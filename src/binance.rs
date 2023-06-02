@@ -1,10 +1,13 @@
 use std::error::Error;
-use tokio_tungstenite::{connect_async, WebSocketStream, MaybeTlsStream};
+
 use tokio::net::TcpStream;
+use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 use tokio_tungstenite::tungstenite::Message;
-use serde::Deserialize;
 use url;
-use crate::common::Quotes;
+
+use serde::Deserialize;
+
+use crate::common::{Quotes, TopQuotes};
 
 pub async fn connect(symbol: &str) -> Result<WebSocketStream<MaybeTlsStream<TcpStream>>, Box<dyn Error>> {
     let binance_path = format!("wss://stream.binance.com:9443/ws/{symbol}@depth20@100ms");
@@ -22,8 +25,14 @@ struct BinanceMsg {
     asks: Vec<Quotes>,
 }
 
-pub fn decode(msg: &Message) {
-    println!("Binance msg: {}", msg.to_string());
+pub fn decode(msg: &Message) -> Result<TopQuotes, Box<dyn Error>> {
+    let binance_msg: BinanceMsg = serde_json::from_str(&msg.to_string())?;
+    let quotes: TopQuotes = TopQuotes {
+        bids: <[Quotes; 10]>::try_from(&binance_msg.bids[0..10])?,
+        asks: <[Quotes; 10]>::try_from(&binance_msg.asks[0..10])?,
+    };
+
+    Ok(quotes)
 }
 
 // Add a test which supplies binance_input.txt as input file and decodes json output using BinanceMsg struct

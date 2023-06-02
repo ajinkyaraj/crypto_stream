@@ -1,15 +1,18 @@
 use std::error::Error;
-use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
-use futures_util::{SinkExt};
+
+use futures_util::SinkExt;
 use tokio::net::TcpStream;
+use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 use tokio_tungstenite::tungstenite::Message;
 use url;
+
 use serde::Deserialize;
 use serde_this_or_that::as_u64;
-use crate::common::Quotes;
+
+use crate::common::*;
 
 #[derive(Debug, Deserialize)]
-struct Data{
+struct Data {
     #[serde(deserialize_with = "as_u64")]
     timestamp: u64,
     #[serde(deserialize_with = "as_u64")]
@@ -17,8 +20,9 @@ struct Data{
     bids: Vec<Quotes>,
     asks: Vec<Quotes>,
 }
+
 #[derive(Debug, Deserialize)]
-struct BitstampMsg{
+struct BitstampMsg {
     data: Data,
     channel: String,
     event: String,
@@ -29,13 +33,19 @@ pub async fn connect(symbol: &str) -> Result<WebSocketStream<MaybeTlsStream<TcpS
     let bitstamp_url = url::Url::parse(&bitstamp_path).expect("Could not connect to coinbase");
     let (mut bitstamp_ws_stream, _) = connect_async(bitstamp_url).await?;
     let bitstamp_subscribe_json = format!("{{\"event\": \"bts:subscribe\", \"data\": {{  \"channel\": \"order_book_{symbol}\"}} }}");
-    bitstamp_ws_stream.send(tokio_tungstenite::tungstenite::Message::Text(bitstamp_subscribe_json)).await?;
+    bitstamp_ws_stream.send(Message::Text(bitstamp_subscribe_json)).await?;
 
     Ok(bitstamp_ws_stream)
 }
 
-pub fn decode(msg: &Message){
-    println!("Bitstamp msg: {}", msg);
+pub fn decode(msg: &Message) -> Result<TopQuotes, Box<dyn Error>> {
+    let bitstamp_msg: BitstampMsg = serde_json::from_str(&msg.to_string())?;
+    let quotes: TopQuotes = TopQuotes {
+        bids: <[Quotes; 10]>::try_from(&bitstamp_msg.data.bids[0..10])?,
+        asks: <[Quotes; 10]>::try_from(&bitstamp_msg.data.asks[0..10])?,
+    };
+
+    Ok(quotes)
 }
 
 
