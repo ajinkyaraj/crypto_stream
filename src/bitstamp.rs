@@ -38,14 +38,16 @@ pub async fn connect(symbol: &str) -> Result<WebSocketStream<MaybeTlsStream<TcpS
     Ok(bitstamp_ws_stream)
 }
 
-pub fn decode(msg: &Message) -> Result<TopQuotes, Box<dyn Error>> {
+pub fn decode(msg: &Message) -> Result<TopQuotesWithExchange, Box<dyn Error>> {
+
+    println!("msg size is : {}", msg.len());
     let bitstamp_msg: BitstampMsg = serde_json::from_str(&msg.to_string())?;
     let quotes: TopQuotes = TopQuotes {
-        bids: <[Quotes; 10]>::try_from(&bitstamp_msg.data.bids[0..10])?,
-        asks: <[Quotes; 10]>::try_from(&bitstamp_msg.data.asks[0..10])?,
+        bids: <[Quotes; 20]>::try_from(&bitstamp_msg.data.bids[0..20])?,
+        asks: <[Quotes; 20]>::try_from(&bitstamp_msg.data.asks[0..20])?,
     };
 
-    Ok(quotes)
+    Ok(TopQuotesWithExchange{exchange: Exchanges::Bitstamp,quotes})
 }
 
 

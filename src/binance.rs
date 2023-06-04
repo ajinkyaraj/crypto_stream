@@ -7,7 +7,7 @@ use url;
 
 use serde::Deserialize;
 
-use crate::common::{Quotes, TopQuotes};
+use crate::common::{Exchanges, Quotes, TopQuotes, TopQuotesWithExchange};
 
 pub async fn connect(symbol: &str) -> Result<WebSocketStream<MaybeTlsStream<TcpStream>>, Box<dyn Error>> {
     let binance_path = format!("wss://stream.binance.com:9443/ws/{symbol}@depth20@100ms");
@@ -25,14 +25,16 @@ struct BinanceMsg {
     asks: Vec<Quotes>,
 }
 
-pub fn decode(msg: &Message) -> Result<TopQuotes, Box<dyn Error>> {
+pub fn decode(msg: &Message) -> Result<TopQuotesWithExchange, Box<dyn Error>> {
+
+    println!("msg size is : {}", msg.len());
     let binance_msg: BinanceMsg = serde_json::from_str(&msg.to_string())?;
     let quotes: TopQuotes = TopQuotes {
-        bids: <[Quotes; 10]>::try_from(&binance_msg.bids[0..10])?,
-        asks: <[Quotes; 10]>::try_from(&binance_msg.asks[0..10])?,
+        bids: <[Quotes; 20]>::try_from(&binance_msg.bids[0..20])?,
+        asks: <[Quotes; 20]>::try_from(&binance_msg.asks[0..20])?,
     };
 
-    Ok(quotes)
+    Ok(TopQuotesWithExchange{exchange: Exchanges::Binance, quotes})
 }
 
 // Add a test which supplies binance_input.txt as input file and decodes json output using BinanceMsg struct

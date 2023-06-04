@@ -10,22 +10,26 @@ pub struct Quotes {
 }
 
 pub struct TopQuotes {
-    pub(crate) bids: [Quotes; 10],
-    pub(crate) asks: [Quotes; 10],
+    pub(crate) bids: [Quotes; 20],
+    pub(crate) asks: [Quotes; 20],
 }
 
-#[derive(Debug, Copy, Clone)]
+pub struct TopQuotesWithExchange{
+    pub(crate) exchange: Exchanges,
+    pub(crate) quotes: TopQuotes,
+}
+
+#[derive(Debug, Copy, Clone, Eq, Hash, PartialEq)]
 pub enum Exchanges {
     Bitstamp = 0,
     Binance = 1,
-    None = 2,
 }
 
-#[derive(Debug, Copy, Clone)]
-pub struct Level {
-    pub(crate) exchange: Exchanges,
-    pub(crate) price: f64,
-    pub(crate) amount: f64,
+pub fn exchange_to_str(exch: Exchanges) -> String {
+    match exch {
+        Exchanges::Binance => String::from("Binance"),
+        Exchanges::Bitstamp => String::from("Bitstamp")
+    }
 }
 
 
