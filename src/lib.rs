@@ -17,11 +17,11 @@ pub mod common;
 pub mod server;
 
 
-pub(crate) type SummaryChannel = (watch::Sender<orderbook::Summary>, watch::Receiver<orderbook::Summary>);
+pub(crate) type SummaryChannel = (watch::Sender<Summary>, watch::Receiver<Summary>);
 
 pub async fn connect_web_stream(symbol: &str, port: i32) -> Result<(), Box<dyn std::error::Error>> {
     // create a BTreeMap named top_20_bids  with key, value pair of OrderedFloat and Level , sorted by  descending order of
-    let summary_ch = Arc::new(RwLock::new(watch::channel(orderbook::Summary {
+    let summary_ch = Arc::new(RwLock::new(watch::channel(Summary {
         spread: Default::default(),
         bids: vec![],
         asks: vec![],

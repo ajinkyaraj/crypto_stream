@@ -32,7 +32,7 @@ impl OrderbookAggregator for OrderbookService {
     async fn book_summary(
         &self,
         request: tonic::Request<orderbook::Empty>,
-    ) -> Result<tonic::Response<Self::BookSummaryStream>, tonic::Status> {
+    ) -> Result<tonic::Response<Self::BookSummaryStream>, Status> {
         let _req = request.into_inner();
 
         let mut summary_rx = self.summary.read().await.1.clone();

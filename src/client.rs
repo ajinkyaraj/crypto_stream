@@ -14,7 +14,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args.len() < 2 {
         panic!("Please provide a port to subscribe to ,default:  50001");
     }
-    let port: i32 = args[1].parse().unwrap();
+    let port: i32 = args[1].parse().expect("Please enter a valid port");
     let addr = format!("http://[::1]:{}", port);
 
     let mut client = OrderbookAggregatorClient::connect(addr).await?;
@@ -25,7 +25,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // setting up indicatif
     let m = MultiProgress::new();
     let sty = ProgressStyle::default_spinner().template(
-        "{prefix:.bold} {spinner} {bar:20.red/blue} {wide_msg}");
+        "{prefix:.bold} {spinner} {bar:20.red/blue} {wide_msg}").tick_chars("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏");
     let bids_bars: Vec<ProgressBar> = vec![
         m.add(ProgressBar::new(100)),
         m.add(ProgressBar::new(100)),
