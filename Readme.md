@@ -4,7 +4,10 @@ s and receive stream for a provided crypto symbol pair (for ex. ethbtc)
 
 ## Usage 
 ~~~
-cargo run --- ethbtc
+cargo run --bin server ethbtc 50001
+
+<open another terminal>
+cargo run --bin client 50001
 ~~~
 
 ## Libraries/Data structures Chosen
@@ -22,12 +25,13 @@ cargo run --- ethbtc
    2. store the top 20 bid and ask in hashmap with exchange as the key.
    3. after every update for any exchange, merge the bids and asks vectors of each exchange to find best 10 bid and ask. The assumption is that each vector is already in sorted order as it was received from exchange.
    4. The best bid is the one with highest price and if prices are equal then on with highest amount. The best ask is the one with lowest price (or highest amount if price is equal).
-   5. 
+   5.
 3. Sending the synthesized order book via gRPC
    1. The gRPC library used is tonic. tonic is batteries included high performance gRPC framework.
-   2. Its very easy to use with great documentation. 
-   3. For a single core  server, rust-tonic is top performer according to following benchmarks
+   2. Its very easy to use with great documentation.
+   3. For a single core server, rust-tonic is top performer according to following benchmarks
       1. https://github.com/LesnyRumcajs/grpc_bench/wiki/2022-04-23-bench-results
    4. we spawn a new task for gRPC server and send the summary data structure in protocol buffer format.
 4. gRPC client
-   1. To be done.
+   1. A cli based progress bar interface which shows top 10 bids and asks.
+   2. Taken from indicatif crate.
